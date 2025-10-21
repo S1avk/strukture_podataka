@@ -15,21 +15,21 @@ typedef struct osoba {
 
 int dodavanje(pozicija, char* ime, char* prezime, int godina);
 int ispis(pozicija);
-int dodajKraj(pozicija, char* ime, char* prezime, int godina);
+int kraj(pozicija, char* ime, char* prezime, int godina);
 int nadiprezime(pozicija, char* prezime);
-int BrisiOsobu(pozicija, char* ime, char* prezime, int godina);
+int brisanje(pozicija, char* ime, char* prezime, int godina);
 
 int main() {
 	osoba head;
 	strcpy(head.ime, ""); strcpy(head.prezime, ""); head.godina = 0; head.next = NULL;
 
-	dodavanje(&head, "Nikola", "Bareta", 04);
+	dodavanje(&head, "Slavko", "Kozina", 04);
 	ispis(head.next);
-	dodajKraj(&head, "Nikola", "Kurt", 04);
+	kraj(&head, "Ante", "Pirija", 04);
 	ispis(head.next);
-	nadiprezime(&head, "Bareta");
+	nadiprezime(&head, "Kozina");
 
-	BrisiOsobu(&head, "Nikola", "Bareta", 04);
+	brisanje(&head, "Slavko", "Kozina", 04);
 	ispis(head.next);
 	return 0;
 }
@@ -60,7 +60,7 @@ int ispis(pozicija p) {
 	return 0;
 }
 
-int dodajKraj(pozicija p, char* ime, char* prezime, int godina) {
+int kraj(pozicija p, char* ime, char* prezime, int godina) {
 	pozicija q;
 	q = (pozicija)malloc(sizeof(osoba));
 	if (!q) {
@@ -92,7 +92,7 @@ int nadiprezime(pozicija p, char* prezime) {
 	return 0;
 }
 
-int BrisiOsobu(pozicija p, char* ime, char* prezime, int godina) {
+int brisanje(pozicija p, char* ime, char* prezime, int godina) {
 	pozicija temp = p->next;
 	while (temp != NULL) {
 		if (strcmp(temp->ime, ime) == 0 && strcmp(temp->prezime, prezime) == 0 && temp->godina == godina) {
@@ -105,4 +105,5 @@ int BrisiOsobu(pozicija p, char* ime, char* prezime, int godina) {
 		p = p->next;
 	}
 	return 0;
+
 }
