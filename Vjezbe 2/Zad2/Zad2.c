@@ -51,7 +51,7 @@ int dodavanje(pozicija p, char* ime, char* prezime, int godina) {
 
 int ispis(pozicija p) {
 	if (p == NULL)
-		printf("Lista je prazba");
+		printf("Lista je prazna");
 	while (p != NULL) {
 		printf("%s %s %d \n", p->ime, p->prezime, p->godina);
 		p = p->next;
@@ -107,3 +107,4 @@ int brisanje(pozicija p, char* ime, char* prezime, int godina) {
 	return 0;
 
 }
+
