@@ -1,4 +1,4 @@
-﻿#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -57,6 +57,7 @@ int main() {
     return 0;
 }
 
+// 2A. Dodavanje novog elementa na početak liste
 int dodavanje(pozicija p, char* ime, char* prezime, int godina) {
     pozicija q = (pozicija)malloc(sizeof(osoba));
     if (!q) return -1;
@@ -68,6 +69,7 @@ int dodavanje(pozicija p, char* ime, char* prezime, int godina) {
     return 0;
 }
 
+// 2B. Ispis liste
 int ispis(pozicija p) {
     if (p == NULL) {
         printf("Lista je prazna\n");
@@ -80,12 +82,14 @@ int ispis(pozicija p) {
     return 0;
 }
 
+// 2C. Dodavanje novog elementa na kraj liste
 int kraj(pozicija p, char* ime, char* prezime, int godina) {
     while (p->next != NULL) p = p->next;
     dodavanje(p, ime, prezime, godina);
     return 0;
 }
 
+// 2D. Pronalaženje elementa iz liste
 int nadiprezime(pozicija p, char* prezime) {
     p = p->next;
     while (p != NULL) {
@@ -99,6 +103,7 @@ int nadiprezime(pozicija p, char* prezime) {
     return 0;
 }
 
+// 2E. Brisanje elementa iz liste
 int brisanje(pozicija p, char* ime, char* prezime, int godina) {
     pozicija temp;
     while (p->next != NULL) {
@@ -113,7 +118,7 @@ int brisanje(pozicija p, char* ime, char* prezime, int godina) {
     return 0;
 }
 
-// A. Dodavanje iza određenog elementa (po prezimenu)
+// 3A. Dodavanje iza određenog elementa
 int dodajIza(pozicija p, char* ime, char* prezime, int godina, char* targetPrezime) {
     pozicija q = p->next;
     while (q != NULL && strcmp(q->prezime, targetPrezime) != 0)
@@ -123,7 +128,7 @@ int dodajIza(pozicija p, char* ime, char* prezime, int godina, char* targetPrezi
     return 0;
 }
 
-// B. Dodavanje ispred određenog elementa (po prezimenu)
+// 3B. Dodavanje ispred određenog elementa
 int dodajIspred(pozicija p, char* ime, char* prezime, int godina, char* targetPrezime) {
     while (p->next != NULL && strcmp(p->next->prezime, targetPrezime) != 0)
         p = p->next;
@@ -132,7 +137,7 @@ int dodajIspred(pozicija p, char* ime, char* prezime, int godina, char* targetPr
     return 0;
 }
 
-// C. Sortiranje po prezimenima (bubble sort po linkovima)
+// 3C. Sortiranje po prezimenima
 int sortiraj(pozicija head) {
     pozicija i, j, prev, temp;
     int swapped;
@@ -155,7 +160,7 @@ int sortiraj(pozicija head) {
     return 0;
 }
 
-// D. Upis u datoteku
+// 3D. Upis u datoteku
 int upisUDatoteku(pozicija p, char* imeDatoteke) {
     FILE* fp = fopen(imeDatoteke, "w");
     if (!fp) return -1;
@@ -167,7 +172,7 @@ int upisUDatoteku(pozicija p, char* imeDatoteke) {
     return 0;
 }
 
-// E. Citanje iz datoteke
+// 3E. Čitanje iz datoteke
 int citajIzDatoteke(pozicija head, char* imeDatoteke) {
     FILE* fp = fopen(imeDatoteke, "r");
     if (!fp) return -1;
