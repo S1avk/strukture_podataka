@@ -1,4 +1,4 @@
-﻿#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,6 +8,71 @@ typedef struct Poly {
     int power;
     struct Poly* next;
 } Poly;
+
+Poly* createPoly(int coeff, int power);
+void insertTerm(Poly** head, int coeff, int power);
+void freePoly(Poly* head);
+void printPoly(Poly* p);
+void parseLineToPoly(const char* line, Poly** poly);
+Poly* addPolynomials(Poly* a, Poly* b);
+Poly* multiplyPolynomials(Poly* a, Poly* b);
+int File(char* filename, Poly** p1, Poly** p2);
+
+int main() {
+    Poly* p1 = NULL;
+    Poly* p2 = NULL;
+    File("polinomi.txt", &p1, &p2);
+    
+
+    printf("Polinom 1: ");
+    printPoly(p1);
+    printf("Polinom 2: ");
+    printPoly(p2);
+
+    Poly* sum = addPolynomials(p1, p2);
+    printf("\nZbroj: ");
+    printPoly(sum);
+
+    Poly* prod = multiplyPolynomials(p1, p2);
+    printf("Umnozak: ");
+    printPoly(prod);
+
+    freePoly(p1); freePoly(p2); freePoly(sum); freePoly(prod);
+    return 0;
+}
+
+int File(char* filename, Poly** p1, Poly** p2) {
+    FILE* f = fopen(filename, "r");
+    if (!f) {
+        perror("Otvaranje datoteke");
+        return 1;
+    }
+
+    char line[4096];
+    // read two non-empty lines
+    int readCount = 0;
+    while (readCount < 2 && fgets(line, sizeof(line), f)) {
+        // skip empty lines
+        int onlyws = 1;
+        for (char* s = line; *s; ++s) if (!(*s == ' ' || *s == '\t' || *s == '\r' || *s == '\n')) { onlyws = 0; break; }
+        if (onlyws) continue;
+        if (readCount == 0) parseLineToPoly(line, p1);
+        else if (readCount == 1) parseLineToPoly(line, p2);
+        readCount++;
+    }
+    fclose(f);
+
+    if (!p1) {
+        printf("Prvi polinom je prazan ili nije pronađen\n");
+        freePoly(p1); freePoly(p2);
+        return 1;
+    }
+    if (!p2) {
+        printf("Drugi polinom je prazan ili nije pronađen\n");
+        freePoly(p1); freePoly(p2);
+        return 1;
+    }
+}
 
 Poly* createPoly(int coeff, int power) {
     Poly* n = (Poly*)malloc(sizeof(Poly));
@@ -92,7 +157,7 @@ void parseLineToPoly(const char* line, Poly** poly) {
     while (tok) {
         char* endptr;
         long coeff = strtol(tok, &endptr, 10);
-        if (endptr == tok) break; // not-int -> end
+        if (endptr == tok) break; // not int -> end
         tok = strtok(NULL, " \t\r\n");
         if (!tok) {
             fprintf(stderr, "Neparan broj članova u liniji\n");
@@ -135,57 +200,4 @@ Poly* multiplyPolynomials(Poly* a, Poly* b) {
         }
     }
     return res;
-}
-
-int main(int argc, char* argv[]) {
-    const char* filename = "polinomi.txt";
-    if (argc >= 2) filename = argv[1];
-
-    FILE* f = fopen(filename, "r");
-    if (!f) {
-        perror("Otvaranje datoteke");
-        return 1;
-    }
-
-    char line[4096];
-    Poly* p1 = NULL, * p2 = NULL;
-	// read two non-empty lines
-    int readCount = 0;
-    while (readCount < 2 && fgets(line, sizeof(line), f)) {
-		// skip empty lines
-        int onlyws = 1;
-        for (char* s = line; *s; ++s) if (!(*s == ' ' || *s == '\t' || *s == '\r' || *s == '\n')) { onlyws = 0; break; }
-        if (onlyws) continue;
-        if (readCount == 0) parseLineToPoly(line, &p1);
-        else if (readCount == 1) parseLineToPoly(line, &p2);
-        readCount++;
-    }
-    fclose(f);
-
-    if (!p1) {
-        printf("Prvi polinom je prazan ili nije pronađen\n");
-        freePoly(p1); freePoly(p2);
-        return 1;
-    }
-    if (!p2) {
-        printf("Drugi polinom je prazan ili nije pronađen\n");
-        freePoly(p1); freePoly(p2);
-        return 1;
-    }
-
-    printf("Polinom 1: ");
-    printPoly(p1);
-    printf("Polinom 2: ");
-    printPoly(p2);
-
-    Poly* sum = addPolynomials(p1, p2);
-    printf("\nZbroj: ");
-    printPoly(sum);
-
-    Poly* prod = multiplyPolynomials(p1, p2);
-    printf("Umnozak: ");
-    printPoly(prod);
-
-    freePoly(p1); freePoly(p2); freePoly(sum); freePoly(prod);
-    return 0;
 }
