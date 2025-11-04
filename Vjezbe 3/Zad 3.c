@@ -3,184 +3,198 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_CHAR 10
+typedef struct Poly {
+    int coeff;
+    int power;
+    struct Poly* next;
+} Poly;
 
-typedef struct osoba* pozicija;
-typedef struct osoba {
-    char ime[MAX_CHAR];
-    char prezime[MAX_CHAR];
-    int godina;
-    pozicija next;
-} osoba;
+Poly* createPoly(int coeff, int power);
+void insertTerm(Poly** head, int coeff, int power);
+void freePoly(Poly* head);
+void printPoly(Poly* p);
+void parseLineToPoly(const char* line, Poly** poly);
+Poly* addPolynomials(Poly* a, Poly* b);
+Poly* multiplyPolynomials(Poly* a, Poly* b);
 
-int dodavanje(pozicija, char*, char*, int);
-int ispis(pozicija);
-int kraj(pozicija, char*, char*, int);
-int nadiprezime(pozicija, char*);
-int brisanje(pozicija, char*, char*, int);
-int dodajIza(pozicija, char*, char*, int, char*);
-int dodajIspred(pozicija, char*, char*, int, char*);
-int sortiraj(pozicija);
-int upisUDatoteku(pozicija, char*);
-int citajIzDatoteke(pozicija, char*);
+int main(int argc, char* argv[]) {
+    const char* filename = "polinomi.txt";
+    if (argc >= 2) filename = argv[1];
 
-int main() {
-    osoba head;
-    strcpy(head.ime, ""); strcpy(head.prezime, ""); head.godina = 0; head.next = NULL;
-
-    dodavanje(&head, "Slavko", "Kozina", 2004);
-    kraj(&head, "Ante", "Pirija", 2004);
-    dodavanje(&head, "Nikola", "Bareta", 2004);
-
-    printf("Pocetna lista:\n");
-    ispis(head.next);
-
-    dodajIza(&head, "Marin", "Devalle", 2004, "Kozina");
-    dodajIspred(&head, "Bruno", "Kosta", 2005, "Pirija");
-
-    printf("\nLista nakon dodavanja:\n");
-    ispis(head.next);
-
-    sortiraj(&head);
-    printf("\nSortirana lista:\n");
-    ispis(head.next);
-
-    upisUDatoteku(head.next, "osobe.txt");
-
-    osoba head2;
-    strcpy(head2.ime, ""); strcpy(head2.prezime, ""); head2.godina = 0; head2.next = NULL;
-    citajIzDatoteke(&head2, "osobe.txt");
-
-    printf("\nLista ucitana iz datoteke:\n");
-    ispis(head2.next);
-
-    return 0;
-}
-
-// 2A. Dodavanje novog elementa na početak liste
-int dodavanje(pozicija p, char* ime, char* prezime, int godina) {
-    pozicija q = (pozicija)malloc(sizeof(osoba));
-    if (!q) return -1;
-    strcpy(q->ime, ime);
-    strcpy(q->prezime, prezime);
-    q->godina = godina;
-    q->next = p->next;
-    p->next = q;
-    return 0;
-}
-
-// 2B. Ispis liste
-int ispis(pozicija p) {
-    if (p == NULL) {
-        printf("Lista je prazna\n");
-        return 0;
+    FILE* f = fopen(filename, "r");
+    if (!f) {
+        perror("Otvaranje datoteke");
+        return 1;
     }
-    while (p != NULL) {
-        printf("%s %s %d\n", p->ime, p->prezime, p->godina);
-        p = p->next;
+
+    char line[4096];
+    Poly* p1 = NULL, * p2 = NULL;
+    // read two non-empty lines
+    int readCount = 0;
+    while (readCount < 2 && fgets(line, sizeof(line), f)) {
+        // skip empty lines
+        int onlyws = 1;
+        for (char* s = line; *s; ++s) if (!(*s == ' ' || *s == '\t' || *s == '\r' || *s == '\n')) { onlyws = 0; break; }
+        if (onlyws) continue;
+        if (readCount == 0) parseLineToPoly(line, &p1);
+        else if (readCount == 1) parseLineToPoly(line, &p2);
+        readCount++;
     }
+    fclose(f);
+
+    if (!p1) {
+        printf("Prvi polinom je prazan ili nije pronađen\n");
+        freePoly(p1); freePoly(p2);
+        return 1;
+    }
+    if (!p2) {
+        printf("Drugi polinom je prazan ili nije pronađen\n");
+        freePoly(p1); freePoly(p2);
+        return 1;
+    }
+
+    printf("Polinom 1: ");
+    printPoly(p1);
+    printf("Polinom 2: ");
+    printPoly(p2);
+
+    Poly* sum = addPolynomials(p1, p2);
+    printf("\nZbroj: ");
+    printPoly(sum);
+
+    Poly* prod = multiplyPolynomials(p1, p2);
+    printf("Umnozak: ");
+    printPoly(prod);
+
+    freePoly(p1); freePoly(p2); freePoly(sum); freePoly(prod);
     return 0;
 }
 
-// 2C. Dodavanje novog elementa na kraj liste
-int kraj(pozicija p, char* ime, char* prezime, int godina) {
-    while (p->next != NULL) p = p->next;
-    dodavanje(p, ime, prezime, godina);
-    return 0;
+
+Poly* createPoly(int coeff, int power) {
+    Poly* n = (Poly*)malloc(sizeof(Poly));
+    if (!n) { perror("malloc"); exit(EXIT_FAILURE); }
+    n->coeff = coeff;
+    n->power = power;
+    n->next = NULL;
+    return n;
 }
 
-// 2D. Pronalaženje elementa iz liste
-int nadiprezime(pozicija p, char* prezime) {
-    p = p->next;
-    while (p != NULL) {
-        if (strcmp(p->prezime, prezime) == 0) {
-            printf("Pronadena osoba: %s %s\n", p->ime, p->prezime);
-            return 0;
+void insertTerm(Poly** head, int coeff, int power) {
+    if (coeff == 0) return;
+    Poly* prev = NULL, * cur = *head;
+    while (cur && cur->power > power) {
+        prev = cur;
+        cur = cur->next;
+    }
+    if (cur && cur->power == power) {
+        cur->coeff += coeff;
+        if (cur->coeff == 0) {
+			// remove term
+            if (prev) prev->next = cur->next;
+            else *head = cur->next;
+            free(cur);
         }
-        p = p->next;
+        return;
     }
-    printf("Osoba nije pronadena\n");
-    return 0;
+    Poly* nw = createPoly(coeff, power);
+    nw->next = cur;
+    if (prev) prev->next = nw;
+    else *head = nw;
 }
 
-// 2E. Brisanje elementa iz liste
-int brisanje(pozicija p, char* ime, char* prezime, int godina) {
-    pozicija temp;
-    while (p->next != NULL) {
-        temp = p->next;
-        if (strcmp(temp->ime, ime) == 0 && strcmp(temp->prezime, prezime) == 0 && temp->godina == godina) {
-            p->next = temp->next;
-            free(temp);
-            return 0;
+void freePoly(Poly* head) {
+    while (head) {
+        Poly* t = head;
+        head = head->next;
+        free(t);
+    }
+}
+
+void printPoly(Poly* p) {
+    if (!p) {
+        printf("0\n");
+        return;
+    }
+    int first = 1;
+    while (p) {
+        int c = p->coeff;
+        int pow = p->power;
+        if (!first) {
+            if (c >= 0) printf(" + ");
+            else printf(" - ");
         }
-        p = p->next;
-    }
-    return 0;
-}
-
-// 3A. Dodavanje iza određenog elementa
-int dodajIza(pozicija p, char* ime, char* prezime, int godina, char* targetPrezime) {
-    pozicija q = p->next;
-    while (q != NULL && strcmp(q->prezime, targetPrezime) != 0)
-        q = q->next;
-    if (q == NULL) return -1;
-    dodavanje(q, ime, prezime, godina);
-    return 0;
-}
-
-// 3B. Dodavanje ispred određenog elementa
-int dodajIspred(pozicija p, char* ime, char* prezime, int godina, char* targetPrezime) {
-    while (p->next != NULL && strcmp(p->next->prezime, targetPrezime) != 0)
-        p = p->next;
-    if (p->next == NULL) return -1;
-    dodavanje(p, ime, prezime, godina);
-    return 0;
-}
-
-// 3C. Sortiranje po prezimenima
-int sortiraj(pozicija head) {
-    pozicija i, j, prev, temp;
-    int swapped;
-    do {
-        swapped = 0;
-        prev = head;
-        i = head->next;
-        while (i != NULL && i->next != NULL) {
-            j = i->next;
-            if (strcmp(i->prezime, j->prezime) > 0) {
-                i->next = j->next;
-                j->next = i;
-                prev->next = j;
-                swapped = 1;
-            }
-            prev = prev->next;
-            i = prev->next;
+        else {
+            if (c < 0) printf("-");
         }
-    } while (swapped);
-    return 0;
-}
-
-// 3D. Upis u datoteku
-int upisUDatoteku(pozicija p, char* imeDatoteke) {
-    FILE* fp = fopen(imeDatoteke, "w");
-    if (!fp) return -1;
-    while (p != NULL) {
-        fprintf(fp, "%s %s %d\n", p->ime, p->prezime, p->godina);
+        int absC = c < 0 ? -c : c;
+		// print term
+        if (pow == 0) {
+            printf("%d", absC);
+        }
+        else if (pow == 1) {
+            if (absC == 1) printf("x");
+            else printf("%dx", absC);
+        }
+        else {
+            if (absC == 1) printf("x^%d", pow);
+            else printf("%dx^%d", absC, pow);
+        }
+        first = 0;
         p = p->next;
     }
-    fclose(fp);
-    return 0;
+    printf("\n");
 }
 
-// 3E. Čitanje iz datoteke
-int citajIzDatoteke(pozicija head, char* imeDatoteke) {
-    FILE* fp = fopen(imeDatoteke, "r");
-    if (!fp) return -1;
-    char ime[MAX_CHAR], prezime[MAX_CHAR];
-    int godina;
-    while (fscanf(fp, "%s %s %d", ime, prezime, &godina) == 3) {
-        kraj(head, ime, prezime, godina);
+// parses a line into a polynomial
+void parseLineToPoly(const char* line, Poly** poly) {
+    char* buf = strdup(line);
+    if (!buf) { perror("strdup"); exit(EXIT_FAILURE); }
+    char* tok = strtok(buf, " \t\r\n");
+    while (tok) {
+        char* endptr;
+        long coeff = strtol(tok, &endptr, 10);
+        if (endptr == tok) break; // not-int -> end
+        tok = strtok(NULL, " \t\r\n");
+        if (!tok) {
+            fprintf(stderr, "Neparan broj članova u liniji\n");
+            break;
+        }
+        long power = strtol(tok, &endptr, 10);
+        if (endptr == tok) {
+            fprintf(stderr, "Neispravan eksponent preskočen.\n");
+            tok = strtok(NULL, " \t\r\n");
+            continue;
+        }
+        insertTerm(poly, (int)coeff, (int)power);
+        tok = strtok(NULL, " \t\r\n");
     }
-    fclose(fp);
-    return 0;
+    free(buf);
+}
+
+Poly* addPolynomials(Poly* a, Poly* b) {
+    Poly* res = NULL;
+    Poly* p = a;
+    while (p) {
+        insertTerm(&res, p->coeff, p->power);
+        p = p->next;
+    }
+    p = b;
+    while (p) {
+        insertTerm(&res, p->coeff, p->power);
+        p = p->next;
+    }
+    return res;
+}
+
+Poly* multiplyPolynomials(Poly* a, Poly* b) {
+    Poly* res = NULL;
+    for (Poly* pa = a; pa; pa = pa->next) {
+        for (Poly* pb = b; pb; pb = pb->next) {
+            int c = pa->coeff * pb->coeff;
+            int pw = pa->power + pb->power;
+            insertTerm(&res, c, pw);
+        }
+    }
+    return res;
 }
