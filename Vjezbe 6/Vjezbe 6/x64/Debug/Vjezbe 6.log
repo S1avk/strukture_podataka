@@ -1,0 +1,15 @@
+﻿  cli.c
+  main.c
+  receipts.c
+C:\Users\Slavko\Desktop\strukture_podataka\Vjezbe 6\Vjezbe 6\cli.c(10,21): warning C4267: 'function': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Slavko\Desktop\strukture_podataka\Vjezbe 6\Vjezbe 6\cli.c(12,9): warning C4033: 'read_line' must return a value
+C:\Users\Slavko\Desktop\strukture_podataka\Vjezbe 6\Vjezbe 6\cli.c(33,10): warning C4101: 'buf': unreferenced local variable
+C:\Users\Slavko\Desktop\strukture_podataka\Vjezbe 6\Vjezbe 6\receipts.c(66,9): warning C4033: 'insert_receipt_sorted' must return a value
+C:\Users\Slavko\Desktop\strukture_podataka\Vjezbe 6\Vjezbe 6\receipts.c(95,13): warning C4033: 'trim' must return a value
+C:\Users\Slavko\Desktop\strukture_podataka\Vjezbe 6\Vjezbe 6\receipts.c(266,50): warning C4033: 'query_article_range' must return a value
+  Generating Code...
+C:\Users\Slavko\Desktop\strukture_podataka\Vjezbe 6\Vjezbe 6\receipts.c(104,1): warning C4715: 'trim': not all control paths return a value
+C:\Users\Slavko\Desktop\strukture_podataka\Vjezbe 6\Vjezbe 6\receipts.c(75,1): warning C4715: 'insert_receipt_sorted': not all control paths return a value
+C:\Users\Slavko\Desktop\strukture_podataka\Vjezbe 6\Vjezbe 6\receipts.c(281,1): warning C4715: 'query_article_range': not all control paths return a value
+C:\Users\Slavko\Desktop\strukture_podataka\Vjezbe 6\Vjezbe 6\cli.c(18,1): warning C4715: 'read_line': not all control paths return a value
+  Vjezbe 6.vcxproj -> C:\Users\Slavko\Desktop\strukture_podataka\Vjezbe 6\x64\Debug\Vjezbe 6.exe
