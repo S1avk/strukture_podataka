@@ -1,0 +1,41 @@
+﻿Ubacujemo elemente u stog dok ne dodemo do operacijskog znaka, tada odma izvrsavamo operaciju i nastavljamo dalje ((4+3)*2 = 43+2*)
+Provjerit da je unos točan tj da nemamo viska operaciju ili broj, pri greški odmah oslobodit listu i javit gresku (43+2*7)
+1)
+td struct postfix* Position
+td sctruct postfix{
+	double number;
+	Position next;
+}postfix;
+
+head = {.number = 0,
+		.next = = 0;}
+2)
+UČITAT DAT
+-pohrantit podatke
+-zatvorit dat
+3)
+a) broj?
+b)znak?
+c)krivi unos? oslobodit i javit gresku
+4.
+a) Push(Position head, double num);
+-alocirat memoriju za novi element
+newEL->number=num;
+newEL->next=NULL;
+q = head;
+newEl->next=q->next;
+q->next = newEL;
+b)
+first = q->next
+second = first->next
+
+c?)
+-obavimo operaciju i pohranimo rezultat
+Pop(Position first, Position second) {
+	q->next = second->next;
+	first->next = NULL;
+	free(first);
+	second->next = NULL;
+	free(second);
+	Push(q, rezultat);
+}
