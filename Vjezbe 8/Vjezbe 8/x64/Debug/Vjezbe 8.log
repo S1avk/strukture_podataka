@@ -1,0 +1,4 @@
+﻿  Zad8.c
+C:\Users\Slavko\Desktop\strukture_podataka\Vjezbe 8\Vjezbe 8\Zad8.c(43,9): warning C4047: 'function': 'treePos *' differs in levels of indirection from 'treePos'
+C:\Users\Slavko\Desktop\strukture_podataka\Vjezbe 8\Vjezbe 8\Zad8.c(43,9): warning C4024: 'delete': different types for formal and actual parameter 1
+  Vjezbe 8.vcxproj -> C:\Users\Slavko\Desktop\strukture_podataka\Vjezbe 8\x64\Debug\Vjezbe 8.exe
