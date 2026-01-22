@@ -1,0 +1,8 @@
+Hrvatska hrv.txt
+Francuska fra.txt
+Spanjolska spa.txt
+Njemacka njem.txt
+Italija ita.txt
+Belgija Bel.txt
+Turska tur.txt
+Japan jap.txt
