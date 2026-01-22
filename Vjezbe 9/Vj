@@ -1,0 +1,240 @@
+
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <ctype.h>
+#include <time.h>
+
+typedef struct tree* treePos;
+typedef struct tree {
+	int value;
+	treePos left;
+	treePos right;
+} tree;
+
+int insert(treePos* root, int value);
+int delete(treePos* root, int value);
+int inorder(treePos root);
+int inorder_to_file(treePos root, FILE* file);
+int preorder(treePos root);
+int postorder(treePos root);
+int levelOrder(treePos root);
+int replace(treePos root, int* sum);
+int calculate_sum(treePos root);
+
+int main() {
+	treePos root = NULL;
+	FILE* file = fopen("output.txt", "w");
+	if (file == NULL) {
+		printf("Error opening file!\n");
+		return -1;
+	}
+
+	// Generate 10 random numbers in range <10, 90>
+	srand((unsigned int)time(NULL));
+	int arr[10];
+	printf("Generated numbers: ");
+	for (int i = 0; i < 10; i++) {
+		arr[i] = 10 + rand() % 81;  // Random number between 10 and 90
+		printf("%d ", arr[i]);
+	}
+	printf("\n\n");
+
+	// a) Insert elements into tree
+	for (int i = 0; i < 10; i++) {
+		insert(&root, arr[i]);
+	}
+
+	printf("Inorder traversal (before replace): ");
+	inorder(root);
+	printf("\n");
+
+	fprintf(file, "Inorder traversal (before replace): ");
+	inorder_to_file(root, file);
+	fprintf(file, "\n\n");
+
+	// b) Replace each node with sum of its subtrees
+	int dummy_sum = 0;
+	replace(root, &dummy_sum);
+
+	printf("Inorder traversal (after replace): ");
+	inorder(root);
+	printf("\n");
+
+	fprintf(file, "Inorder traversal (after replace): ");
+	inorder_to_file(root, file);
+	fprintf(file, "\n");
+
+	fclose(file);
+	printf("\nResults written to output.txt\n");
+
+	// Cleanup (optional - program will exit anyway)
+	return 0;
+}
+
+int insert(treePos* root, int value) {
+	if (*root == NULL) {
+		*root = (treePos)malloc(sizeof(tree));
+		if (*root == NULL) {
+			printf("Memory allocation failed!\n");
+			return -1;
+		}
+		(*root)->value = value;
+		(*root)->left = NULL;
+		(*root)->right = NULL;
+		return 0;
+	}
+	if (value < (*root)->value) {
+		return insert(&(*root)->left, value);
+	}
+	else if (value > (*root)->value) {
+		return insert(&(*root)->right, value);
+	}
+	else {
+		printf("Value %d already exists in the tree.\n", value);
+		return -1;
+	}
+}
+
+int delete(treePos* root, int value) {
+	if (*root == NULL) {
+		printf("Value %d not found in the tree.\n", value);
+		return -1;
+	}
+	if (value < (*root)->value) {
+		return delete(&(*root)->left, value);
+	}
+	else if (value > (*root)->value) {
+		return delete(&(*root)->right, value);
+	}
+	else {
+		if ((*root)->left == NULL && (*root)->right == NULL) {
+			free(*root);
+			*root = NULL;
+		}
+		else if ((*root)->left == NULL) {
+			treePos temp = *root;
+			*root = (*root)->right;
+			free(temp);
+		}
+		else if ((*root)->right == NULL) {
+			treePos temp = *root;
+			*root = (*root)->left;
+			free(temp);
+		}
+		else {
+			treePos temp = (*root)->right;
+			while (temp->left != NULL) {
+				temp = temp->left;
+			}
+			(*root)->value = temp->value;
+			delete(&(*root)->right, temp->value);
+		}
+		return 0;
+	}
+}
+
+int inorder(treePos root) {
+	if (root == NULL) {
+		return 0;
+	}
+	inorder(root->left);
+	printf("%d ", root->value);
+	inorder(root->right);
+	return 0;
+}
+
+int inorder_to_file(treePos root, FILE* file) {
+	if (root == NULL) {
+		return 0;
+	}
+	inorder_to_file(root->left, file);
+	fprintf(file, "%d ", root->value);
+	inorder_to_file(root->right, file);
+	return 0;
+}
+
+int preorder(treePos root) {
+	if (root == NULL) {
+		return 0;
+	}
+	printf("%d ", root->value);
+	preorder(root->left);
+	preorder(root->right);
+	return 0;
+}
+
+int postorder(treePos root) {
+	if (root == NULL) {
+		return 0;
+	}
+	postorder(root->left);
+	postorder(root->right);
+	printf("%d ", root->value);
+	return 0;
+}
+
+int levelOrder(treePos root) {
+	if (root == NULL) {
+		return 0;
+	}
+	treePos* queue = (treePos*)malloc(100 * sizeof(treePos));
+	if (queue == NULL) {
+		printf("Memory allocation failed!\n");
+		return -1;
+	}
+	int capacity = 100;
+	int front = 0;
+	int rear = 0;
+	queue[rear++] = root;
+	while (front < rear) {
+		if (rear >= capacity) {
+			capacity *= 2;
+			queue = (treePos*)realloc(queue, capacity * sizeof(treePos));
+			if (queue == NULL) {
+				printf("Memory allocation failed!\n");
+				return -1;
+			}
+		}
+		treePos current = queue[front++];
+		printf("%d ", current->value);
+		if (current->left != NULL) {
+			queue[rear++] = current->left;
+		}
+		if (current->right != NULL) {
+			queue[rear++] = current->right;
+		}
+	}
+	free(queue);
+	return 0;
+}
+
+// Calculate sum of all elements in subtree
+int calculate_sum(treePos root) {
+	if (root == NULL) {
+		return 0;
+	}
+	return root->value + calculate_sum(root->left) + calculate_sum(root->right);
+}
+
+// Replace each node with sum of its left and right subtrees
+int replace(treePos root, int* sum) {
+	if (root == NULL) {
+		return 0;
+	}
+
+	// Calculate sum of left and right subtrees
+	int left_sum = calculate_sum(root->left);
+	int right_sum = calculate_sum(root->right);
+
+	// Recursively replace in subtrees first (post-order approach)
+	replace(root->left, sum);
+	replace(root->right, sum);
+
+	// Replace current node value with sum of its subtrees
+	root->value = left_sum + right_sum;
+
+	return 0;
+}

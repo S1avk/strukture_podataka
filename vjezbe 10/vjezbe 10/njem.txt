@@ -1,0 +1,3 @@
+Berlin, 3584240
+Hamburg, 1788890
+Munich, 1596050
